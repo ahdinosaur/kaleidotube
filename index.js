@@ -1,7 +1,7 @@
 const Regl = require('regl')
 const Resl = require('resl')
 
-var zoom = 6
+var zoom = 12
 var speed = 1
 // youtube-dl https://youtu.be/pAwR6w2TgxY
 var videoUrl = "file:///home/dinosaur/Videos/POGO - Alice-pAwR6w2TgxY.mkv"
@@ -29,6 +29,7 @@ const drawKaleidotube = regl({
   uniform float videoAspectRatio;
   uniform float frame;
   uniform float zoom;
+  uniform float speed;
   varying vec2 uv;
 
   float walk (float numSteps, float index) {
@@ -56,88 +57,101 @@ const drawKaleidotube = regl({
     float size = 1.0 / zoom;
     float y = walk(zoom, frame);
     float x = walk(zoom, mod(frame, zoom));
+    vec2 pos = vec2(walk(size, uv.x) + mod(uv.x, size) / speed, uv.y);
 
     if (inBetween(y, mod(y + 1.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture0, vec2(uv.x, revMod(uv.y - y, 1.0) * zoom));
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture1, vec2(uv.x, revMod(uv.y - y, 1.0) * zoom));
+        gl_FragColor = texture2D(texture1, vec2(pos.x, revMod(uv.y - y, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 1.0 * size, 1.0), mod(y + 2.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture1, vec2(uv.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture1, vec2(pos.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
       } else if (zoom == 2.0) {
-        gl_FragColor = texture2D(texture0, vec2(uv.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture2, vec2(uv.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture2, vec2(pos.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 2.0 * size, 1.0), mod(y + 3.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture2, vec2(uv.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture2, vec2(pos.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
       } else if (zoom == 3.0) {
-        gl_FragColor = texture2D(texture0, vec2(uv.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture3, vec2(uv.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture3, vec2(pos.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 3.0 * size, 1.0), mod(y + 4.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture3, vec2(uv.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture3, vec2(pos.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
       } else if (zoom == 4.0) {
-        gl_FragColor = texture2D(texture0, vec2(uv.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture4, vec2(uv.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture4, vec2(pos.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 4.0 * size, 1.0), mod(y + 5.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture4, vec2(uv.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture4, vec2(pos.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
       } else if (zoom == 5.0) {
-        gl_FragColor = texture2D(texture0, vec2(uv.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture5, vec2(uv.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture5, vec2(pos.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 5.0 * size, 1.0), mod(y + 6.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture5, vec2(uv.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture5, vec2(pos.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
       } else if (zoom == 6.0) {
-        gl_FragColor = texture2D(texture0, vec2(uv.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture6, vec2(uv.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture6, vec2(pos.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 6.0 * size, 1.0), mod(y + 7.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture6, vec2(uv.x, revMod(uv.y - y - 6.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture6, vec2(pos.x, revMod(uv.y - y - 6.0 * size, 1.0) * zoom));
+      } else if (zoom == 7.0) {
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 6.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture7, vec2(uv.x, revMod(uv.y - y - 6.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture7, vec2(pos.x, revMod(uv.y - y - 6.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 7.0 * size, 1.0), mod(y + 8.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture7, vec2(uv.x, revMod(uv.y - y - 7.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture7, vec2(pos.x, revMod(uv.y - y - 7.0 * size, 1.0) * zoom));
+      } else if (zoom == 8.0) {
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 7.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture8, vec2(uv.x, revMod(uv.y - y - 7.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture8, vec2(pos.x, revMod(uv.y - y - 7.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 8.0 * size, 1.0), mod(y + 9.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture8, vec2(uv.x, revMod(uv.y - y - 8.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture8, vec2(pos.x, revMod(uv.y - y - 8.0 * size, 1.0) * zoom));
+      } else if (zoom == 9.0) {
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 8.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture9, vec2(uv.x, revMod(uv.y - y - 8.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture9, vec2(pos.x, revMod(uv.y - y - 8.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 9.0 * size, 1.0), mod(y + 10.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture9, vec2(uv.x, revMod(uv.y - y - 9.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture9, vec2(pos.x, revMod(uv.y - y - 9.0 * size, 1.0) * zoom));
+      } else if (zoom == 10.0) {
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 9.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture10, vec2(uv.x, revMod(uv.y - y - 9.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture10, vec2(pos.x, revMod(uv.y - y - 9.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 10.0 * size, 1.0), mod(y + 11.0 * size, 1.0), uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture10, vec2(uv.x, revMod(uv.y - y - 10.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture10, vec2(pos.x, revMod(uv.y - y - 10.0 * size, 1.0) * zoom));
+      } else if (zoom == 11.0) {
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 10.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture11, vec2(uv.x, revMod(uv.y - y - 10.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture11, vec2(pos.x, revMod(uv.y - y - 10.0 * size, 1.0) * zoom));
       }
     } else if (inBetween(mod(y + 11.0 * size, 1.0), y, uv.y)) {
       if (uv.x < x) {
-        gl_FragColor = texture2D(texture11, vec2(uv.x, revMod(uv.y - y - 11.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture11, vec2(pos.x, revMod(uv.y - y - 11.0 * size, 1.0) * zoom));
+      } else if (zoom == 12.0) {
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 11.0 * size, 1.0) * zoom));
       } else {
-        gl_FragColor = texture2D(texture0, vec2(uv.x, revMod(uv.y - y - 11.0 * size, 1.0) * zoom));
+        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 11.0 * size, 1.0) * zoom));
       }
     }
   }`,
@@ -163,9 +177,9 @@ const drawKaleidotube = regl({
 
     // float frame = mod(tick, zoom * zoom) / (zoom * zoom);
     frame: function (context, props, batchId) {
-      const frame = context.tick % (zoom * zoom) / (zoom * zoom)
-      // console.log('props', context.tick, frame)
-      return frame
+      const { tick } = context
+      const { speed, zoom } = props
+      return (tick % (zoom * zoom) / (zoom * zoom))
     },
 
     texture0: regl.prop('texture0'),
@@ -215,7 +229,7 @@ Resl({
 
     video.autoplay = true
     video.loop = true
-    // video.muted = true
+    video.muted = true
     video.play()
 
     console.log(regl.limits)
@@ -230,7 +244,7 @@ Resl({
     }
 
     regl.frame(() => {
-      var x = video.videoWidth * screenIndexX * speed
+      var x = video.videoWidth * screenIndexX
       var y = 0
       
       textures[screenIndexY].subimage(video, x, y)
@@ -251,11 +265,12 @@ Resl({
 
         videoShape: [video.videoWidth, video.videoHeight],
         videoAspectRatio: video.videoWidth / video.videoHeight,
-        zoom
+        zoom,
+        speed
       })
 
       screenIndexX++
-      if (screenIndexX >= numScreensX) {
+      if (screenIndexX >= numScreensX * speed) {
         screenIndexX = 0
         screenIndexY++
       }
