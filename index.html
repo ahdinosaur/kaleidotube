@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8" />
+    <title>kaleidotube</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link type="text/css" rel="stylesheet" href="../node_modules/video.js/dist/video-js.min.css" />
+    <link href="index.css" rel="stylesheet" />
+  </head>
+  <body>
+    <video
+      id="kaleidotube-player"
+      class="video-js vjs-default-skin"
+      controls
+      autoplay
+      width="600px"
+      data-setup='{ "techOrder": ["youtube", "html5"], "sources": [{ "type": "video/youtube", "src": "https://www.youtube.com/watch?v=pAwR6w2TgxY"}] }'
+    ></video>
+    <script src="bundle.js"></script>
+  </body>
+</html>
