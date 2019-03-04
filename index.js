@@ -1,58 +1,48 @@
 var zoom = 0.5
+var speed = 250
+// youtube-dl https://youtu.be/pAwR6w2TgxY
+var videoUrl = "file:///home/dinosaur/Videos/POGO - Alice-pAwR6w2TgxY.mkv"
+
+kaleidotube()
 
 function kaleidotube () {
-  var videoEl = document.createElement('video')
-  videoEl.src = "file:///home/dinosaur/Videos/POGO - Alice-pAwR6w2TgxY.mkv"
-  videoEl.setAttribute('autoplay', true)
-  videoEl.setAttribute('loop', true)
-  document.body.appendChild(videoEl)
+  var videosContainer = document.querySelector('.videos')
+
+  var originalVideoEl = document.createElement('video')
+  originalVideoEl.src = videoUrl
+  originalVideoEl.setAttribute('loop', true)
+  videosContainer.appendChild(originalVideoEl)
 
   var width = 0
   var height = 0
 
-  var canvasIndex = 0
-  var numCanvases = 0
-
-  var canvasEls = window.canvasEls = []
-
-  videoEl.addEventListener('loadedmetadata', initVideo, false)
-  videoEl.addEventListener('timeupdate', drawFrame, false)
+  originalVideoEl.addEventListener('loadedmetadata', initVideo, false)
 
   function initVideo (e) {
     width = this.videoWidth * zoom
     height = this.videoHeight * zoom
 
-    this.width = width
-    this.height = height
+    var numVideos = Math.floor(window.innerWidth / width) * Math.floor(window.innerHeight / height)
+    var videos = [originalVideoEl]
+    for (var i = 0; i < numVideos - 1; i++) {
+      var nextVideoEl = originalVideoEl.cloneNode()
+      nextVideoEl.muted = true
+      videosContainer.appendChild(nextVideoEl)
+      videos.push(nextVideoEl)
+    }
 
-    numCanvases = Math.floor(window.innerWidth / width) * Math.floor(window.innerHeight / height)
-    console.log(numCanvases)
-  }
-
-  var drawing = false
-  function drawFrame (e) {
-    if (drawing) return
-    drawing = true
-    requestAnimationFrame(() => {
-      let canvasEl = document.createElement('canvas')
-      let canvasContext = canvasEl.getContext('2d')
-      canvasEl.width = this.videoWidth
-      canvasEl.height = this.videoHeight
-      canvasEl.style.width = `${width}px`
-      canvasEl.style.height = `${height}px`
-      canvasEls.push(canvasEl)
-      document.body.insertBefore(canvasEl, videoEl)
-
-      canvasContext.drawImage(this, 0, 0)
-
-      canvasIndex++
-      if (canvasIndex >= numCanvases) {
-        document.body.removeChild(canvasEls.shift())
-      }
-
-      drawing = false
+    videos.forEach(video => {
+      video.width = width
+      video.height = height
     })
+
+    var videoIndex = 0
+    iterateVideos()
+    function iterateVideos () {
+      videos[videoIndex++].play()
+      if (videoIndex < videos.length) {
+        setTimeout(iterateVideos, speed)
+      }
+    }
   }
 }
-
-kaleidotube()
