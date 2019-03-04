@@ -1,4 +1,4 @@
-var zoom = 0.2
+var zoom = 0.5
 
 function kaleidotube () {
   var videoEl = document.createElement('video')
@@ -7,37 +7,51 @@ function kaleidotube () {
   videoEl.setAttribute('loop', true)
   document.body.appendChild(videoEl)
 
+  var width = 0
+  var height = 0
+
   var canvasIndex = 0
-  var canvasEls = []
-  var canvasContexts = []
+  var numCanvases = 0
+
+  var canvasEls = window.canvasEls = []
 
   videoEl.addEventListener('loadedmetadata', initVideo, false)
   videoEl.addEventListener('timeupdate', drawFrame, false)
 
   function initVideo (e) {
-    var width = this.videoWidth * zoom
-    var height = this.videoHeight * zoom
+    width = this.videoWidth * zoom
+    height = this.videoHeight * zoom
 
     this.width = width
     this.height = height
 
-    for (var i = 0; i < (window.innerWidth / width); i++) {
-      for (var j = 0; j < (window.innerHeight / height); j++) {
-        let canvasEl = document.createElement('canvas')
-        let canvasContext = canvasEl.getContext('2d')
-        canvasEl.width = width
-        canvasEl.height = height
-        canvasEls.push(canvasEl)
-        canvasContexts.push(canvasContext)
-        document.body.appendChild(canvasEl)
-      }
-    }
+    numCanvases = Math.floor(window.innerWidth / width) * Math.floor(window.innerHeight / height)
+    console.log(numCanvases)
   }
 
+  var drawing = false
   function drawFrame (e) {
-    console.log('canvasIndex', canvasIndex, canvasContexts)
-    canvasContexts[canvasIndex].drawImage(this, 0, 0)
-    canvasIndex = (canvasIndex + 1) % canvasEls.length
+    if (drawing) return
+    drawing = true
+    requestAnimationFrame(() => {
+      let canvasEl = document.createElement('canvas')
+      let canvasContext = canvasEl.getContext('2d')
+      canvasEl.width = this.videoWidth
+      canvasEl.height = this.videoHeight
+      canvasEl.style.width = `${width}px`
+      canvasEl.style.height = `${height}px`
+      canvasEls.push(canvasEl)
+      document.body.insertBefore(canvasEl, videoEl)
+
+      canvasContext.drawImage(this, 0, 0)
+
+      canvasIndex++
+      if (canvasIndex >= numCanvases) {
+        document.body.removeChild(canvasEls.shift())
+      }
+
+      drawing = false
+    })
   }
 }
 
