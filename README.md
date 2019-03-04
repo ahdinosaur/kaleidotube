@@ -2,13 +2,19 @@
 
 youtube kaleidoscopes
 
+inspired by the defunct [yooouuutuuube.com](https://yooouuutuuube.com)
+
+## demo
+
+![screenshot of kaleidotube](./screenshot.jpg)
+
 ```shell
-npm install --save kaleidotube
+git clone git://github.com/ahdinosaur/kaleidotube
+cd kaleidotube
+npm install
+# download your favorite video and edit `videoUrl` in `index.js`
+npm start
 ```
-
-## usage
-
-### `kaleidotube = require('kaleidotube')`
 
 ## license
 
