@@ -1,214 +1,68 @@
 const Regl = require('regl')
 const Resl = require('resl')
 
-var zoom = 12
+var zoom = 1
 var speed = 1
 // youtube-dl https://youtu.be/pAwR6w2TgxY
 var videoUrl = "file:///home/dinosaur/Videos/POGO - Alice-pAwR6w2TgxY.mkv"
 
 const regl = Regl()
 
-const drawKaleidotube = regl({
+
+// TODO
+// each video tile has a texture
+// each texture contains all the frames for the time
+// on render, iterate through textures with different start texture and start index
+// on frame, add frame to next texture and index
+
+const drawVideo = regl({
   frag: `
-  precision mediump float;
-  uniform sampler2D texture0;
-  uniform sampler2D texture1;
-  uniform sampler2D texture2;
-  uniform sampler2D texture3;
-  uniform sampler2D texture4;
-  uniform sampler2D texture5;
-  uniform sampler2D texture6;
-  uniform sampler2D texture7;
-  uniform sampler2D texture8;
-  uniform sampler2D texture9;
-  uniform sampler2D texture10;
-  uniform sampler2D texture11;
-  uniform sampler2D texture12;
-  uniform vec2 screenShape;
-  uniform vec2 videoShape;
-  uniform float videoAspectRatio;
-  uniform float frame;
-  uniform float zoom;
-  uniform float speed;
-  varying vec2 uv;
+    precision mediump float;
+    uniform vec2 screenShape;
+    uniform sampler2D videoTexture;
+    uniform vec2 videoShape;
+    varying vec2 uv;
 
-  float walk (float numSteps, float index) {
-    return floor(numSteps * index) / numSteps;
-  }
-
-  bool inBetween (float start, float stop, float index) {
-    if (stop < start) {
-      return index > start || index <= stop;
-    } else {
-      return index > start && index <= stop;
+    void main () {
+      gl_FragColor = texture2D(videoTexture, uv);
     }
-  }
-
-  float revMod (float a, float b) {
-    if (a < 0.0) return mod(a + 2.0 * b, b);
-    return mod(a, b);
-  }
-
-  float map (float x, float in_min, float in_max, float out_min, float out_max) {
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-  }
-
-  void main () {
-    float size = 1.0 / zoom;
-    float y = walk(zoom, frame);
-    float x = walk(zoom, mod(frame, zoom));
-    vec2 pos = vec2(walk(size, uv.x) + mod(uv.x, size) / speed, uv.y);
-
-    if (inBetween(y, mod(y + 1.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture1, vec2(pos.x, revMod(uv.y - y, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 1.0 * size, 1.0), mod(y + 2.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture1, vec2(pos.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
-      } else if (zoom == 2.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture2, vec2(pos.x, revMod(uv.y - y - 1.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 2.0 * size, 1.0), mod(y + 3.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture2, vec2(pos.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
-      } else if (zoom == 3.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture3, vec2(pos.x, revMod(uv.y - y - 2.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 3.0 * size, 1.0), mod(y + 4.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture3, vec2(pos.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
-      } else if (zoom == 4.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture4, vec2(pos.x, revMod(uv.y - y - 3.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 4.0 * size, 1.0), mod(y + 5.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture4, vec2(pos.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
-      } else if (zoom == 5.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture5, vec2(pos.x, revMod(uv.y - y - 4.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 5.0 * size, 1.0), mod(y + 6.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture5, vec2(pos.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
-      } else if (zoom == 6.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture6, vec2(pos.x, revMod(uv.y - y - 5.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 6.0 * size, 1.0), mod(y + 7.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture6, vec2(pos.x, revMod(uv.y - y - 6.0 * size, 1.0) * zoom));
-      } else if (zoom == 7.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 6.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture7, vec2(pos.x, revMod(uv.y - y - 6.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 7.0 * size, 1.0), mod(y + 8.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture7, vec2(pos.x, revMod(uv.y - y - 7.0 * size, 1.0) * zoom));
-      } else if (zoom == 8.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 7.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture8, vec2(pos.x, revMod(uv.y - y - 7.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 8.0 * size, 1.0), mod(y + 9.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture8, vec2(pos.x, revMod(uv.y - y - 8.0 * size, 1.0) * zoom));
-      } else if (zoom == 9.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 8.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture9, vec2(pos.x, revMod(uv.y - y - 8.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 9.0 * size, 1.0), mod(y + 10.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture9, vec2(pos.x, revMod(uv.y - y - 9.0 * size, 1.0) * zoom));
-      } else if (zoom == 10.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 9.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture10, vec2(pos.x, revMod(uv.y - y - 9.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 10.0 * size, 1.0), mod(y + 11.0 * size, 1.0), uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture10, vec2(pos.x, revMod(uv.y - y - 10.0 * size, 1.0) * zoom));
-      } else if (zoom == 11.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 10.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture11, vec2(pos.x, revMod(uv.y - y - 10.0 * size, 1.0) * zoom));
-      }
-    } else if (inBetween(mod(y + 11.0 * size, 1.0), y, uv.y)) {
-      if (uv.x < x) {
-        gl_FragColor = texture2D(texture11, vec2(pos.x, revMod(uv.y - y - 11.0 * size, 1.0) * zoom));
-      } else if (zoom == 12.0) {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 11.0 * size, 1.0) * zoom));
-      } else {
-        gl_FragColor = texture2D(texture0, vec2(pos.x, revMod(uv.y - y - 11.0 * size, 1.0) * zoom));
-      }
-    }
-  }`,
+  `,
 
   vert: `
-  precision mediump float;
-  attribute vec2 position;
-  varying vec2 uv;
+    precision mediump float;
+    attribute vec2 position;
+    uniform vec2 videoIndex;
+    varying vec2 uv;
 
-  void main () {
-    uv = vec2(1.0 - position.x, position.y);
-    gl_Position = vec4(1.0 - 2.0 * position, 0, 1);
-  }`,
+    void main () {
+      uv = vec2(1.0 - position.x, position.y);
+      gl_Position = vec4(1.0 - 2.0 * position, 0, 1);
+    }
+  `,
 
   attributes: {
     position: [
-      -2, 0,
-      0, -2,
-      2, 2]
+      [-1, -1], [+1, +1], [-1, +1],
+      [-1, -1], [+1, -1], [+1, +1]
+    ]
   },
 
   uniforms: {
-
-    // float frame = mod(tick, zoom * zoom) / (zoom * zoom);
-    frame: function (context, props, batchId) {
-      const { tick } = context
-      const { speed, zoom } = props
-      return (tick % (zoom * zoom) / (zoom * zoom))
-    },
-
-    texture0: regl.prop('texture0'),
-    texture1: regl.prop('texture1'),
-    texture2: regl.prop('texture2'),
-    texture3: regl.prop('texture3'),
-    texture4: regl.prop('texture4'),
-    texture5: regl.prop('texture5'),
-    texture6: regl.prop('texture6'),
-    texture7: regl.prop('texture7'),
-    texture8: regl.prop('texture8'),
-    texture9: regl.prop('texture9'),
-    texture10: regl.prop('texture10'),
-    texture11: regl.prop('texture11'),
-
     screenShape: ({viewportWidth, viewportHeight}) => {
       return [viewportWidth, viewportHeight]
     },
 
+    videoTexture: regl.prop('texture'),
     videoShape: regl.prop('videoShape'),
-    videoAspectRatio: regl.prop('videoAspectRatio'),
-
-    zoom: regl.prop('zoom'),
-    speed: regl.prop('speed'),
-
-    tick: regl.context('tick')
   },
 
-  count: 3
+  depth: {
+    enable: false
+  },
+  cull: {
+    enable: true
+  },
+  count: 6
 })
 
 Resl({
@@ -236,9 +90,9 @@ Resl({
     console.log('width', video.videoWidth * numScreensX * numScreensY * speed)
 
     var textures = []
-    for (var i = 0; i < 12; i++) {
+    for (var i = 0; i < numScreensX * numScreensY; i++) {
       textures.push(regl.texture({
-        width: video.videoWidth * numScreensX * speed,
+        width: video.videoWidth * speed,
         height: video.videoHeight
       }))
     }
@@ -249,24 +103,9 @@ Resl({
       
       textures[screenIndexY].subimage(video, x, y)
 
-      drawKaleidotube({
-        texture0: textures[0],
-        texture1: textures[1],
-        texture2: textures[2],
-        texture3: textures[3],
-        texture4: textures[4],
-        texture5: textures[5],
-        texture6: textures[6],
-        texture7: textures[7],
-        texture8: textures[8],
-        texture9: textures[9],
-        texture10: textures[10],
-        texture11: textures[11],
-
-        videoShape: [video.videoWidth, video.videoHeight],
-        videoAspectRatio: video.videoWidth / video.videoHeight,
-        zoom,
-        speed
+      drawVideo({
+        texture: textures[0],
+        videoShape: [video.videoWidth, video.videoHeight]
       })
 
       screenIndexX++
