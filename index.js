@@ -1,7 +1,7 @@
 const Regl = require('regl')
 const Resl = require('resl')
 
-var zoom = 1
+var zoom = 2
 var speed = 1
 // youtube-dl https://youtu.be/pAwR6w2TgxY
 var videoUrl = "file:///home/dinosaur/Videos/POGO - Alice-pAwR6w2TgxY.mkv"
@@ -18,25 +18,40 @@ const regl = Regl()
 const drawVideo = regl({
   frag: `
     precision mediump float;
+
     uniform vec2 screenShape;
+    uniform vec2 numTiles;
+    uniform vec2 tileIndex;
     uniform sampler2D videoTexture;
     uniform vec2 videoShape;
+
     varying vec2 uv;
 
     void main () {
-      gl_FragColor = texture2D(videoTexture, uv);
+      vec2 coord = (uv / screenShape) * videoShape * numTiles;
+      gl_FragColor = texture2D(videoTexture, coord);
     }
   `,
 
   vert: `
     precision mediump float;
+
     attribute vec2 position;
-    uniform vec2 videoIndex;
+
+    uniform vec2 numTiles;
+    uniform vec2 tileIndex;
+    uniform vec2 screenShape;
+    uniform vec2 videoShape;
+
     varying vec2 uv;
 
     void main () {
-      uv = vec2(1.0 - position.x, position.y);
-      gl_Position = vec4(1.0 - 2.0 * position, 0, 1);
+      uv = 0.5 * (1.0 + position);
+/*      vec2 box = tileIndex * numTiles / screenShape; */
+/*      vec2 size = vec2(screenShape.x / screenShape.y * videoShape.y, videoShape.y); */
+/*      vec2 pos = mix(box, size, uv); */
+      vec2 pos = position * tileIndex * 0.5;
+      gl_Position = vec4(pos, 0, 1);
     }
   `,
 
@@ -52,16 +67,13 @@ const drawVideo = regl({
       return [viewportWidth, viewportHeight]
     },
 
-    videoTexture: regl.prop('texture'),
+    numTiles: regl.prop('numTiles'),
+    tileIndex: regl.prop('tileIndex'),
+
+    videoTexture: regl.prop('videoTexture'),
     videoShape: regl.prop('videoShape'),
   },
 
-  depth: {
-    enable: false
-  },
-  cull: {
-    enable: true
-  },
   count: 6
 })
 
@@ -75,47 +87,40 @@ Resl({
   },
 
   onDone: ({ video }) => {
-    var screenIndexX = 0
-    var screenIndexY = 0
-
-    var numScreensX = zoom
-    var numScreensY = zoom
+    var numTiles = [zoom, zoom]
 
     video.autoplay = true
     video.loop = true
     video.muted = true
     video.play()
 
+    var videoShape = [video.videoWidth, video.videoHeight]
+
     console.log(regl.limits)
-    console.log('width', video.videoWidth * numScreensX * numScreensY * speed)
 
     var textures = []
-    for (var i = 0; i < numScreensX * numScreensY; i++) {
+    for (let i = 0; i < numTiles[0] * numTiles[1]; i++) {
       textures.push(regl.texture({
-        width: video.videoWidth * speed,
-        height: video.videoHeight
+        shape: videoShape
       }))
     }
 
+    var textureIndex = 0
     regl.frame(() => {
-      var x = video.videoWidth * screenIndexX
-      var y = 0
-      
-      textures[screenIndexY].subimage(video, x, y)
+      textures[textureIndex].subimage(video)
 
-      drawVideo({
-        texture: textures[0],
-        videoShape: [video.videoWidth, video.videoHeight]
-      })
+      for (var x = 0; x < numTiles[0]; x++) {
+        for (var y = 0; y < numTiles[1]; y++) {
+          drawVideo({
+            numTiles,
+            videoTexture: textures[(textureIndex + x + numTiles[0] * y) % textures.length],
+            videoShape,
+            tileIndex: [x, y],
+          })
+        }
+      }
 
-      screenIndexX++
-      if (screenIndexX >= numScreensX * speed) {
-        screenIndexX = 0
-        screenIndexY++
-      }
-      if (screenIndexY >= numScreensY) {
-        screenIndexY = 0
-      }
+      textureIndex = (textureIndex + 1) % textures.length
     })
   }
 })
