@@ -1,8 +1,8 @@
 const Regl = require('regl')
 const Resl = require('resl')
 
-var zoom = 16
-var speed = 1
+var zoom = 12
+var skip = 3
 // youtube-dl https://youtu.be/pAwR6w2TgxY
 var videoUrl = "file:///home/dinosaur/Videos/POGO - Alice-pAwR6w2TgxY.mkv"
 
@@ -89,13 +89,13 @@ Resl({
 
     video.autoplay = true
     video.loop = true
-    video.muted = true
+    // video.muted = true
     video.play()
 
     var videoShape = [video.videoWidth, video.videoHeight]
 
     var textures = []
-    for (let i = 0; i < numTiles[0] * numTiles[1]; i++) {
+    for (let i = 0; i < numTiles[0] * numTiles[1] * skip; i++) {
       textures.push(regl.texture({
         shape: videoShape
       }))
@@ -107,10 +107,10 @@ Resl({
 
       for (var x = 0; x < numTiles[0]; x++) {
         for (var y = 0; y < numTiles[1]; y++) {
-          var tileIndex = (1 + index + x + y * numTiles[0]) % textures.length
+          var textureIndex = (1 + index + skip * (x + y * numTiles[0])) % textures.length
           drawVideo({
             numTiles,
-            videoTexture: textures[tileIndex],
+            videoTexture: textures[textureIndex],
             videoShape,
             tileIndex: [x, y],
           })
