@@ -1,7 +1,7 @@
 const Regl = require('regl')
 const Resl = require('resl')
 
-var zoom = 2
+var zoom = 16
 var speed = 1
 // youtube-dl https://youtu.be/pAwR6w2TgxY
 var videoUrl = "file:///home/dinosaur/Videos/POGO - Alice-pAwR6w2TgxY.mkv"
@@ -28,8 +28,7 @@ const drawVideo = regl({
     varying vec2 uv;
 
     void main () {
-      vec2 coord = (uv / screenShape) * videoShape * numTiles;
-      gl_FragColor = texture2D(videoTexture, coord);
+      gl_FragColor = texture2D(videoTexture, uv);
     }
   `,
 
@@ -47,10 +46,9 @@ const drawVideo = regl({
 
     void main () {
       uv = 0.5 * (1.0 + position);
-/*      vec2 box = tileIndex * numTiles / screenShape; */
-/*      vec2 size = vec2(screenShape.x / screenShape.y * videoShape.y, videoShape.y); */
-/*      vec2 pos = mix(box, size, uv); */
-      vec2 pos = position * tileIndex * 0.5;
+      vec2 index = tileIndex / numTiles;
+      vec2 size = 1.0 / numTiles;
+      vec2 pos = 1.0 - 2.0 * mix(index, index + size, uv);
       gl_Position = vec4(pos, 0, 1);
     }
   `,
@@ -96,8 +94,6 @@ Resl({
 
     var videoShape = [video.videoWidth, video.videoHeight]
 
-    console.log(regl.limits)
-
     var textures = []
     for (let i = 0; i < numTiles[0] * numTiles[1]; i++) {
       textures.push(regl.texture({
@@ -105,22 +101,23 @@ Resl({
       }))
     }
 
-    var textureIndex = 0
+    var index = 0
     regl.frame(() => {
-      textures[textureIndex].subimage(video)
+      textures[index].subimage(video)
 
       for (var x = 0; x < numTiles[0]; x++) {
         for (var y = 0; y < numTiles[1]; y++) {
+          var tileIndex = (1 + index + x + y * numTiles[0]) % textures.length
           drawVideo({
             numTiles,
-            videoTexture: textures[(textureIndex + x + numTiles[0] * y) % textures.length],
+            videoTexture: textures[tileIndex],
             videoShape,
             tileIndex: [x, y],
           })
         }
       }
 
-      textureIndex = (textureIndex + 1) % textures.length
+      index = (index + 1) % textures.length
     })
   }
 })
